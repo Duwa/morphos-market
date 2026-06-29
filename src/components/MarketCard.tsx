@@ -1,6 +1,8 @@
 import Link from "next/link";
 import type { SerializedMarket } from "@/lib/market";
 import { pct, daysUntil, CATEGORY_TONE } from "@/lib/format";
+import { RobotArt } from "@/components/RobotArt";
+import { morphFor } from "@/lib/morphology";
 
 export function MarketCard({ m }: { m: SerializedMarket }) {
   const tone = CATEGORY_TONE[m.category] ?? "var(--accent)";
@@ -11,7 +13,7 @@ export function MarketCard({ m }: { m: SerializedMarket }) {
       href={`/market/${m.slug}`}
       className="tick group block border border-border bg-surface p-4 hover:border-border-strong transition-colors"
     >
-      <div className="flex items-center justify-between mb-3">
+      <div className="flex items-center justify-between mb-2">
         <span
           className="label"
           style={{ color: tone }}
@@ -21,6 +23,11 @@ export function MarketCard({ m }: { m: SerializedMarket }) {
         <span className="label">
           {resolved ? `resolved ${m.outcome}` : `closes ${daysUntil(m.closesAt)}`}
         </span>
+      </div>
+
+      {/* concept art of the robot form this market is about */}
+      <div className="relative -mx-1 mb-2 h-24 rounded bg-surface-2 border border-border overflow-hidden scanline">
+        <RobotArt kind={morphFor(m.slug)} className="absolute inset-0 p-1 opacity-90 group-hover:opacity-100 transition-opacity" />
       </div>
 
       <h3 className="text-[0.95rem] leading-snug font-medium text-ink min-h-[3.6em] group-hover:text-accent transition-colors">

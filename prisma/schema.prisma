@@ -6,7 +6,7 @@ generator client {
 }
 
 datasource db {
-  provider = "postgresql"
+  provider = "sqlite"
   url      = env("DATABASE_URL")
 }
 
@@ -50,6 +50,19 @@ model Position {
   updatedAt DateTime @updatedAt
 
   @@unique([userId, marketId])
+}
+
+// Community "Imagine a Form" submissions — speculative robot morphologies
+// and the milestone markets people wish existed.
+model Submission {
+  id         String   @id @default(cuid())
+  formName   String // the proposed robot form, e.g. "Modular wall-climbing octopod"
+  morphology String   @default("humanoid") // closest RobotArt kind
+  pitch      String // why this shape might win
+  question   String? // a milestone market they'd want
+  author     String   @default("anonymous")
+  votes      Int      @default(0)
+  createdAt  DateTime @default(now())
 }
 
 model Trade {

@@ -5,6 +5,8 @@ import { serializeMarket } from "@/lib/market";
 import { priceYes } from "@/lib/lmsr";
 import { TradePanel } from "@/components/TradePanel";
 import { Sparkline } from "@/components/Sparkline";
+import { RobotArt } from "@/components/RobotArt";
+import { morphFor } from "@/lib/morphology";
 import { getOrCreateUser } from "@/lib/session";
 import { pct1, daysUntil, CATEGORY_TONE } from "@/lib/format";
 
@@ -61,6 +63,12 @@ export default async function MarketPage({
           <h1 className="text-2xl font-bold tracking-tight leading-snug">
             {market.title}
           </h1>
+
+          {/* concept art of the robot form in question */}
+          <div className="relative tick border border-border bg-surface-2 scanline mt-5 h-40 overflow-hidden">
+            <RobotArt kind={morphFor(market.slug)} className="absolute inset-0 p-4" />
+            <span className="absolute bottom-2 right-3 label">concept · {market.category}</span>
+          </div>
 
           {/* Headline probability + chart */}
           <div className="tick border border-border bg-surface mt-6 p-5">
