@@ -1,0 +1,66 @@
+// Morphos — prediction market on robot morphology
+// SQLite + Prisma. Markets are binary (YES/NO) milestone questions.
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id        String     @id @default(cuid())
+  handle    String     @unique
+  balance   Float      @default(1000) // play-money credits
+  createdAt DateTime   @default(now())
+  positions Position[]
+  trades    Trade[]
+}
+
+model Market {
+  id          String     @id @default(cuid())
+  slug        String     @unique
+  title       String
+  description String
+  category    String // e.g. "Mobility", "Manipulation", "Sensing", "Form"
+  closesAt    DateTime // trading stops
+  resolvesAt  DateTime // expected resolution
+  // LMSR state
+  b           Float      @default(150) // liquidity parameter
+  qYes        Float      @default(0) // outstanding YES shares
+  qNo         Float      @default(0) // outstanding NO shares
+  volume      Float      @default(0) // total credits traded
+  status      String     @default("OPEN") // OPEN | CLOSED | RESOLVED
+  outcome     String? // YES | NO once resolved
+  createdAt   DateTime   @default(now())
+  positions   Position[]
+  trades      Trade[]
+}
+
+model Position {
+  id        String   @id @default(cuid())
+  user      User     @relation(fields: [userId], references: [id])
+  userId    String
+  market    Market   @relation(fields: [marketId], references: [id])
+  marketId  String
+  yesShares Float    @default(0)
+  noShares  Float    @default(0)
+  updatedAt DateTime @updatedAt
+
+  @@unique([userId, marketId])
+}
+
+model Trade {
+  id        String   @id @default(cuid())
+  user      User     @relation(fields: [userId], references: [id])
+  userId    String
+  market    Market   @relation(fields: [marketId], references: [id])
+  marketId  String
+  outcome   String // YES | NO
+  shares    Float // positive = buy, negative = sell
+  cost      Float // credits paid (negative = received)
+  priceYes  Float // YES price after the trade
+  createdAt DateTime @default(now())
+}
