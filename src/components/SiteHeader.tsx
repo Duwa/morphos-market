@@ -40,6 +40,7 @@ export function SiteHeader() {
     { href: "/atlas", label: "Atlas" },
     { href: "/imagine", label: "Imagine" },
     { href: "/graduation", label: "Graduation" },
+    { href: "/proof", label: "Proof" },
     { href: "/portfolio", label: "Portfolio" },
   ];
 
