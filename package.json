@@ -11,7 +11,9 @@
     "db:push": "prisma db push",
     "db:seed": "tsx prisma/seed.ts",
     "db:reset": "prisma db push --force-reset && tsx prisma/seed.ts",
-    "db:studio": "prisma studio"
+    "db:studio": "prisma studio",
+    "verify": "tsx scripts/verify-invariants.ts",
+    "demo:activity": "tsx scripts/demo-activity.ts"
   },
   "prisma": {
     "seed": "tsx prisma/seed.ts"
