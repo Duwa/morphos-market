@@ -37,6 +37,7 @@ export function SiteHeader() {
 
   const tabs = [
     { href: "/", label: "Markets" },
+    { href: "/board", label: "Board" },
     { href: "/atlas", label: "Atlas" },
     { href: "/materials", label: "Materials" },
     { href: "/build", label: "Build" },
