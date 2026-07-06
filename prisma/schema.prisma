@@ -95,6 +95,46 @@ model MaterialEvent {
   @@unique([materialId, seq])
 }
 
+// DIY builds: a maker publishes a robot with an OPEN bill of materials (which
+// can reference registered Materials) plus steps. "Build this" logs a real
+// consumption-pull event — the confirmed pull that makes the forecast market a
+// true JIT/Kanban system. Pull events are hash-chained (tamper-evident).
+model Build {
+  id         String      @id @default(cuid())
+  slug       String      @unique
+  name       String
+  author     String
+  morphology String      @default("wheeled")
+  summary    String
+  steps      String // newline-separated instructions
+  pulls      Int         @default(0) // "build this" count = consumption pull
+  createdAt  DateTime    @default(now())
+  bom        BomItem[]
+  pullEvents PullEvent[]
+}
+
+model BomItem {
+  id           String  @id @default(cuid())
+  build        Build   @relation(fields: [buildId], references: [id])
+  buildId      String
+  part         String
+  qty          Int     @default(1)
+  materialSlug String? // optional link to a registered Material
+}
+
+model PullEvent {
+  id        String   @id @default(cuid())
+  build     Build    @relation(fields: [buildId], references: [id])
+  buildId   String
+  seq       Int
+  actor     String
+  prevHash  String
+  hash      String
+  createdAt DateTime @default(now())
+
+  @@unique([buildId, seq])
+}
+
 model Trade {
   id        String   @id @default(cuid())
   user      User     @relation(fields: [userId], references: [id])

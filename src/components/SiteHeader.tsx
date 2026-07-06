@@ -39,6 +39,7 @@ export function SiteHeader() {
     { href: "/", label: "Markets" },
     { href: "/atlas", label: "Atlas" },
     { href: "/materials", label: "Materials" },
+    { href: "/build", label: "Build" },
     { href: "/imagine", label: "Imagine" },
     { href: "/graduation", label: "Graduation" },
     { href: "/proof", label: "Proof" },
