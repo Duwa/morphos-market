@@ -6,7 +6,7 @@ generator client {
 }
 
 datasource db {
-  provider = "postgresql"
+  provider = "sqlite"
   url      = env("DATABASE_URL")
 }
 
@@ -63,6 +63,36 @@ model Submission {
   author     String   @default("anonymous")
   votes      Int      @default(0)
   createdAt  DateTime @default(now())
+}
+
+// Material innovation registry. Each material earns a hash-chained provenance
+// trail (Registered → Tested → Adopted → Graduated). Events are causally
+// ordered and tamper-evident — the HoTT idea applied to the supply chain.
+model Material {
+  id          String          @id @default(cuid())
+  slug        String          @unique
+  name        String
+  innovator   String // who submitted it (person or org)
+  category    String // e.g. "Tactile sensing", "Soft actuation", "Lightweight structure"
+  morphology  String          @default("softgripper") // related RobotArt kind
+  description String
+  createdAt   DateTime        @default(now())
+  events      MaterialEvent[]
+}
+
+model MaterialEvent {
+  id         String   @id @default(cuid())
+  material   Material @relation(fields: [materialId], references: [id])
+  materialId String
+  seq        Int // position in the chain (0-based)
+  kind       String // Registered | Tested | Adopted | Graduated
+  detail     String
+  actor      String
+  prevHash   String
+  hash       String // sha256(prevHash + payload) — tamper-evident chain
+  createdAt  DateTime @default(now())
+
+  @@unique([materialId, seq])
 }
 
 model Trade {

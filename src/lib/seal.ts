@@ -20,6 +20,13 @@ function hashOf(prev: string, event: MarketEvent): string {
     .digest("hex");
 }
 
+// Generic chain link — used by the material provenance trail too.
+export function hashLink(prev: string, payload: string): string {
+  return createHash("sha256").update(`${prev}|${payload}`).digest("hex");
+}
+
+export const GENESIS_HASH = "GENESIS";
+
 export function sealChain(events: MarketEvent[]): Sealed[] {
   let prev = GENESIS;
   return events.map((event, seq) => {

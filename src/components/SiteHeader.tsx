@@ -38,6 +38,7 @@ export function SiteHeader() {
   const tabs = [
     { href: "/", label: "Markets" },
     { href: "/atlas", label: "Atlas" },
+    { href: "/materials", label: "Materials" },
     { href: "/imagine", label: "Imagine" },
     { href: "/graduation", label: "Graduation" },
     { href: "/proof", label: "Proof" },
