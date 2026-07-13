@@ -4,14 +4,20 @@ import {
   eventsFor,
   metricsFor,
   evaluate,
+  pullsByMorphology,
   DEFAULT_THRESHOLDS,
 } from "@/lib/graduation";
+import { morphFor } from "@/lib/morphology";
 import { logHead, sealChain, verifyChain } from "@/lib/seal";
 
 export const dynamic = "force-dynamic";
 
 export async function GET() {
-  const markets = await prisma.market.findMany({ orderBy: { volume: "desc" } });
+  const [markets, builds] = await Promise.all([
+    prisma.market.findMany({ orderBy: { volume: "desc" } }),
+    prisma.build.findMany({ select: { morphology: true, pulls: true } }),
+  ]);
+  const pullMap = pullsByMorphology(builds);
 
   const results = await Promise.all(
     markets.map(async (m) => {
@@ -20,10 +26,10 @@ export async function GET() {
         orderBy: { createdAt: "asc" },
       });
       const events = eventsFor(m, trades);
-      const metrics = metricsFor(m, events);
+      const pulls = pullMap[morphFor(m.slug)] ?? 0;
+      const metrics = metricsFor(m, events, pulls);
       const { checks, eligible, progress } = evaluate(metrics);
 
-      // tamper-evident commitment to the market's full causal log
       const sealed = sealChain(events);
       const integrity = {
         chainValid: verifyChain(sealed),
@@ -45,7 +51,6 @@ export async function GET() {
     })
   );
 
-  // graduation candidates first, then by progress
   results.sort((a, b) =>
     a.eligible === b.eligible ? b.progress - a.progress : a.eligible ? -1 : 1
   );

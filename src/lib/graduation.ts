@@ -1,45 +1,54 @@
-// Graduation: which markets have earned their way up to a real-money venue.
+// Graduation: which markets have earned their way up.
 //
-// A market graduates only when it shows genuine, broad-based signal — and the
-// decision is computed by REPLAYING its causal event log, so the verdict is
-// reproducible and the underlying log is tamper-evident (see seal.ts). This is
-// the artifact you hand a regulated venue: "this market earned it; here's proof."
+// The manifesto reframes this: a thing graduates on BROAD, REAL belief — not on
+// money. So the gate weighs breadth (many unique believers), conviction (the
+// crowd decided), and real pull (confirmed "Build this" demand from the DIY
+// layer). Volume is shown but no longer gates — that was the casino metric.
+// Everything is computed by REPLAYING the tamper-evident causal log.
 
 import { replay, marketPrice, type MarketEvent } from "./events";
 import type { Outcome } from "./lmsr";
 
 export type Thresholds = {
-  minVolume: number;
-  minTrades: number;
-  minTraders: number;
-  minConviction: number; // distance of YES price from 0.5 — how much the crowd "decided"
+  minTraders: number; // breadth — many believers, not one whale
+  minConviction: number; // distance of YES price from 0.5
+  minPulls: number; // real consumption-pull from builds of this morphology
+  minTrades: number; // baseline activity
 };
 
 export const DEFAULT_THRESHOLDS: Thresholds = {
-  minVolume: 200,
-  minTrades: 8,
   minTraders: 3,
   minConviction: 0.18,
+  minPulls: 2,
+  minTrades: 6,
 };
 
 export type Metrics = {
-  volume: number;
+  volume: number; // informational only
   trades: number;
   traders: number;
   prob: number;
   conviction: number;
+  pulls: number; // real demand for this market's morphology
 };
 
 export type Checks = {
-  volume: boolean;
-  trades: boolean;
-  traders: boolean;
+  breadth: boolean;
   conviction: boolean;
+  pull: boolean;
+  activity: boolean;
 };
 
+// Sum real "Build this" pulls by morphology → the demand signal per shape.
+export function pullsByMorphology(
+  builds: { morphology: string; pulls: number }[]
+): Record<string, number> {
+  const out: Record<string, number> = {};
+  for (const b of builds) out[b.morphology] = (out[b.morphology] ?? 0) + b.pulls;
+  return out;
+}
+
 // Build the canonical event log for a market from its stored row + trade rows.
-// The Create event carries the initial (seed) liquidity so replay reconstructs
-// exactly the current state.
 export function eventsFor(
   market: { id: string; b: number; qYes: number; qNo: number },
   trades: { userId: string; outcome: string; shares: number; createdAt: Date }[]
@@ -76,7 +85,8 @@ export function eventsFor(
 
 export function metricsFor(
   market: { id: string; b: number; qYes: number; qNo: number; volume: number },
-  events: MarketEvent[]
+  events: MarketEvent[],
+  pulls = 0
 ): Metrics {
   const w = replay(events);
   const m = w.markets.get(market.id)!;
@@ -95,15 +105,16 @@ export function metricsFor(
     traders: traders.size,
     prob,
     conviction: Math.abs(prob - 0.5),
+    pulls,
   };
 }
 
 export function evaluate(metrics: Metrics, t: Thresholds = DEFAULT_THRESHOLDS) {
   const checks: Checks = {
-    volume: metrics.volume >= t.minVolume,
-    trades: metrics.trades >= t.minTrades,
-    traders: metrics.traders >= t.minTraders,
+    breadth: metrics.traders >= t.minTraders,
     conviction: metrics.conviction >= t.minConviction,
+    pull: metrics.pulls >= t.minPulls,
+    activity: metrics.trades >= t.minTrades,
   };
   const eligible = Object.values(checks).every(Boolean);
   const met = Object.values(checks).filter(Boolean).length;

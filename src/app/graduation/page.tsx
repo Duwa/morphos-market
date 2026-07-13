@@ -4,6 +4,7 @@ import {
   eventsFor,
   metricsFor,
   evaluate,
+  pullsByMorphology,
   DEFAULT_THRESHOLDS,
 } from "@/lib/graduation";
 import { logHead, sealChain, verifyChain } from "@/lib/seal";
@@ -13,7 +14,11 @@ import { morphFor } from "@/lib/morphology";
 export const dynamic = "force-dynamic";
 
 export default async function GraduationPage() {
-  const markets = await prisma.market.findMany({ orderBy: { volume: "desc" } });
+  const [markets, builds] = await Promise.all([
+    prisma.market.findMany({ orderBy: { volume: "desc" } }),
+    prisma.build.findMany({ select: { morphology: true, pulls: true } }),
+  ]);
+  const pullMap = pullsByMorphology(builds);
 
   const rows = await Promise.all(
     markets.map(async (m) => {
@@ -22,7 +27,7 @@ export default async function GraduationPage() {
         orderBy: { createdAt: "asc" },
       });
       const events = eventsFor(m, trades);
-      const metrics = metricsFor(m, events);
+      const metrics = metricsFor(m, events, pullMap[morphFor(m.slug)] ?? 0);
       const verdict = evaluate(metrics);
       const sealed = sealChain(events);
       return {
@@ -51,18 +56,19 @@ export default async function GraduationPage() {
         The markets that earned their way up.
       </h1>
       <p className="mt-4 max-w-2xl text-muted leading-relaxed">
-        Morphos is the farm system. A market graduates to a real-money venue only
-        when it shows genuine, broad-based signal — and the verdict is computed by
-        replaying its tamper-evident causal log, so it&apos;s reproducible by
-        anyone. This is the certificate a regulated exchange can trust.
+        The best rises — not on money, on <span className="text-ink">belief and real demand</span>.
+        A market graduates when many people believe (breadth), the crowd has decided
+        (conviction), and real makers are building it (pull from the DIY market). Raw
+        volume is shown but doesn&apos;t gate — that was the casino metric. The verdict
+        replays a tamper-evident causal log, so anyone can verify it.
       </p>
 
       {/* threshold legend */}
       <div className="mt-6 flex flex-wrap gap-x-6 gap-y-2 border border-border bg-surface-2 p-4 tick">
-        <Legend k="Volume" v={`≥ ${DEFAULT_THRESHOLDS.minVolume} cr`} />
-        <Legend k="Trades" v={`≥ ${DEFAULT_THRESHOLDS.minTrades}`} />
-        <Legend k="Unique traders" v={`≥ ${DEFAULT_THRESHOLDS.minTraders}`} />
+        <Legend k="Breadth" v={`≥ ${DEFAULT_THRESHOLDS.minTraders} believers`} />
         <Legend k="Conviction" v={`≥ ${(DEFAULT_THRESHOLDS.minConviction * 100).toFixed(0)}% off 50/50`} />
+        <Legend k="Real pull" v={`≥ ${DEFAULT_THRESHOLDS.minPulls} builds`} />
+        <Legend k="Activity" v={`≥ ${DEFAULT_THRESHOLDS.minTrades} trades`} />
         <Legend k="Eligible now" v={`${eligibleCount} / ${rows.length}`} />
       </div>
 
@@ -84,10 +90,10 @@ export default async function GraduationPage() {
                   </div>
                 </div>
                 <div className="mt-2 flex flex-wrap gap-x-4 gap-y-1">
-                  <Crit label="vol" ok={r.checks.volume} v={`${Math.round(r.metrics.volume)}`} />
-                  <Crit label="trades" ok={r.checks.trades} v={`${r.metrics.trades}`} />
-                  <Crit label="traders" ok={r.checks.traders} v={`${r.metrics.traders}`} />
+                  <Crit label="believers" ok={r.checks.breadth} v={`${r.metrics.traders}`} />
                   <Crit label="conviction" ok={r.checks.conviction} v={`${(r.metrics.conviction * 100).toFixed(0)}%`} />
+                  <Crit label="real pull" ok={r.checks.pull} v={`${r.metrics.pulls}`} />
+                  <Crit label="trades" ok={r.checks.activity} v={`${r.metrics.trades}`} />
                 </div>
               </div>
 

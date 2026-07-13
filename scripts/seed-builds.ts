@@ -27,6 +27,20 @@ const BUILDS = [
     pulls: 3,
   },
   {
+    slug: "flatfloor-tote-mover",
+    name: "Flat-floor tote mover",
+    author: "maker_kepler",
+    morphology: "wheeled",
+    summary: "A low wheeled base that ferries 40kg totes across a flat warehouse floor — no legs, no drama, no falling over.",
+    steps: "Bolt the drive base\nMount the tote cradle\nFlash the nav stack\nMap the floor",
+    bom: [
+      { part: "wheeled drive base", qty: 1, materialSlug: "aircore-lattice" },
+      { part: "lidar", qty: 1, materialSlug: null },
+      { part: "tote cradle", qty: 1, materialSlug: null },
+    ],
+    pulls: 4,
+  },
+  {
     slug: "gentle-picker-arm",
     name: "Gentle picker arm",
     author: "maker_boru",
