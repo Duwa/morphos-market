@@ -101,9 +101,9 @@ export default async function GraduationPage() {
 
               <div className="text-right shrink-0">
                 {r.eligible ? (
-                  <span className="btn rounded px-3 py-1.5 inline-block" style={{ background: "var(--yes)", color: "#fff", borderColor: "transparent" }}>
-                    ✓ Graduates
-                  </span>
+                  <Link href={`/certificate/${r.slug}`} className="btn rounded px-3 py-1.5 inline-block" style={{ background: "var(--yes)", color: "#fff", borderColor: "transparent" }}>
+                    ✓ Certificate →
+                  </Link>
                 ) : (
                   <span className="label">{Math.round(r.progress * 100)}% there</span>
                 )}
