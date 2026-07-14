@@ -1,12 +1,12 @@
 // Morphos — prediction market on robot morphology
-// SQLite + Prisma. Markets are binary (YES/NO) milestone questions.
+// PostgreSQL + Prisma (Neon on Vercel). Markets are binary (YES/NO) milestones.
 
 generator client {
   provider = "prisma-client-js"
 }
 
 datasource db {
-  provider = "sqlite"
+  provider = "postgresql"
   url      = env("DATABASE_URL")
 }
 
