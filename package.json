@@ -15,7 +15,8 @@
     "verify": "tsx scripts/verify-invariants.ts",
     "demo:activity": "tsx scripts/demo-activity.ts",
     "seed:materials": "tsx scripts/seed-materials.ts",
-    "seed:builds": "tsx scripts/seed-builds.ts"
+    "seed:builds": "tsx scripts/seed-builds.ts",
+    "seed:rep": "tsx scripts/seed-reputation.ts"
   },
   "prisma": {
     "seed": "tsx prisma/seed.ts"

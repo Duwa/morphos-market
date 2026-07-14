@@ -4,6 +4,7 @@ import { serializeMarket } from "@/lib/market";
 import { morphFor } from "@/lib/morphology";
 import { RobotArt, type MorphKind } from "@/components/RobotArt";
 import { eventsFor, metricsFor, evaluate, pullsByMorphology } from "@/lib/graduation";
+import { loadReputation } from "@/lib/reputation-server";
 import { certificate } from "@/lib/provenance";
 
 export const dynamic = "force-dynamic";
@@ -35,11 +36,12 @@ export default async function BoardPage() {
     prisma.build.findMany({ orderBy: { pulls: "desc" } }),
   ]);
   const pullMap = pullsByMorphology(buildRows);
+  const rep = await loadReputation();
 
   const marketCards: Card[] = await Promise.all(
     marketRows.map(async (m) => {
       const trades = await prisma.trade.findMany({ where: { marketId: m.id }, orderBy: { createdAt: "asc" } });
-      const { eligible } = evaluate(metricsFor(m, eventsFor(m, trades), pullMap[morphFor(m.slug)] ?? 0));
+      const { eligible } = evaluate(metricsFor(m, eventsFor(m, trades), pullMap[morphFor(m.slug)] ?? 0, rep.scores));
       const s = serializeMarket(m);
       return {
         type: "market" as const,

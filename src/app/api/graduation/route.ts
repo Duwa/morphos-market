@@ -8,14 +8,16 @@ import {
   DEFAULT_THRESHOLDS,
 } from "@/lib/graduation";
 import { morphFor } from "@/lib/morphology";
+import { loadReputation } from "@/lib/reputation-server";
 import { logHead, sealChain, verifyChain } from "@/lib/seal";
 
 export const dynamic = "force-dynamic";
 
 export async function GET() {
-  const [markets, builds] = await Promise.all([
+  const [markets, builds, rep] = await Promise.all([
     prisma.market.findMany({ orderBy: { volume: "desc" } }),
     prisma.build.findMany({ select: { morphology: true, pulls: true } }),
+    loadReputation(),
   ]);
   const pullMap = pullsByMorphology(builds);
 
@@ -27,7 +29,7 @@ export async function GET() {
       });
       const events = eventsFor(m, trades);
       const pulls = pullMap[morphFor(m.slug)] ?? 0;
-      const metrics = metricsFor(m, events, pulls);
+      const metrics = metricsFor(m, events, pulls, rep.scores);
       const { checks, eligible, progress } = evaluate(metrics);
 
       const sealed = sealChain(events);

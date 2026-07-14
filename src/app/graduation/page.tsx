@@ -10,13 +10,15 @@ import {
 import { logHead, sealChain, verifyChain } from "@/lib/seal";
 import { RobotArt } from "@/components/RobotArt";
 import { morphFor } from "@/lib/morphology";
+import { loadReputation } from "@/lib/reputation-server";
 
 export const dynamic = "force-dynamic";
 
 export default async function GraduationPage() {
-  const [markets, builds] = await Promise.all([
+  const [markets, builds, rep] = await Promise.all([
     prisma.market.findMany({ orderBy: { volume: "desc" } }),
     prisma.build.findMany({ select: { morphology: true, pulls: true } }),
+    loadReputation(),
   ]);
   const pullMap = pullsByMorphology(builds);
 
@@ -27,7 +29,7 @@ export default async function GraduationPage() {
         orderBy: { createdAt: "asc" },
       });
       const events = eventsFor(m, trades);
-      const metrics = metricsFor(m, events, pullMap[morphFor(m.slug)] ?? 0);
+      const metrics = metricsFor(m, events, pullMap[morphFor(m.slug)] ?? 0, rep.scores);
       const verdict = evaluate(metrics);
       const sealed = sealChain(events);
       return {
@@ -90,7 +92,7 @@ export default async function GraduationPage() {
                   </div>
                 </div>
                 <div className="mt-2 flex flex-wrap gap-x-4 gap-y-1">
-                  <Crit label="believers" ok={r.checks.breadth} v={`${r.metrics.traders}`} />
+                  <Crit label="believers" ok={r.checks.breadth} v={`${r.metrics.traders}${r.metrics.credibility > 0.05 ? ` +${r.metrics.credibility.toFixed(1)}★` : ""}`} />
                   <Crit label="conviction" ok={r.checks.conviction} v={`${(r.metrics.conviction * 100).toFixed(0)}%`} />
                   <Crit label="real pull" ok={r.checks.pull} v={`${r.metrics.pulls}`} />
                   <Crit label="trades" ok={r.checks.activity} v={`${r.metrics.trades}`} />

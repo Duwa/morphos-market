@@ -7,6 +7,7 @@
 // Everything is computed by REPLAYING the tamper-evident causal log.
 
 import { replay, marketPrice, type MarketEvent } from "./events";
+import { repWeight } from "./reputation";
 import type { Outcome } from "./lmsr";
 
 export type Thresholds = {
@@ -30,6 +31,8 @@ export type Metrics = {
   prob: number;
   conviction: number;
   pulls: number; // real demand for this market's morphology
+  credibility: number; // reputation-weight of the believers (proven forecasters)
+  effectiveBreadth: number; // traders + credibility — belief weighted by track record
 };
 
 export type Checks = {
@@ -86,7 +89,8 @@ export function eventsFor(
 export function metricsFor(
   market: { id: string; b: number; qYes: number; qNo: number; volume: number },
   events: MarketEvent[],
-  pulls = 0
+  pulls = 0,
+  repByUser: Record<string, number> = {}
 ): Metrics {
   const w = replay(events);
   const m = w.markets.get(market.id)!;
@@ -98,6 +102,8 @@ export function metricsFor(
       trades++;
     }
   }
+  let credibility = 0;
+  for (const u of traders) credibility += repWeight(repByUser[u]);
   const prob = marketPrice(m);
   return {
     volume: market.volume,
@@ -106,12 +112,14 @@ export function metricsFor(
     prob,
     conviction: Math.abs(prob - 0.5),
     pulls,
+    credibility,
+    effectiveBreadth: traders.size + credibility,
   };
 }
 
 export function evaluate(metrics: Metrics, t: Thresholds = DEFAULT_THRESHOLDS) {
   const checks: Checks = {
-    breadth: metrics.traders >= t.minTraders,
+    breadth: metrics.effectiveBreadth >= t.minTraders,
     conviction: metrics.conviction >= t.minConviction,
     pull: metrics.pulls >= t.minPulls,
     activity: metrics.trades >= t.minTrades,

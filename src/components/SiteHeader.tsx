@@ -43,6 +43,7 @@ export function SiteHeader() {
     { href: "/build", label: "Build" },
     { href: "/imagine", label: "Imagine" },
     { href: "/graduation", label: "Graduation" },
+    { href: "/reputation", label: "Reputation" },
     { href: "/proof", label: "Proof" },
     { href: "/portfolio", label: "Portfolio" },
   ];
