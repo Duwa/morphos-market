@@ -78,6 +78,9 @@ export const MARKET_MORPH: Record<string, MorphKind> = {
   "general-purpose-humanoid-profit-2030": "humanoid",
   "soft-gripper-default-2031": "softgripper",
   "quadruped-mainstream-2029": "quadruped",
+  "vision-tactile-parity-2030": "tactile",
+  "wiring-harness-nonhumanoid-2031": "snakearm",
+  "reconfigurable-line-2032": "wheeled",
 };
 
 export function morphFor(slug: string): MorphKind {

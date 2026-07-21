@@ -110,6 +110,45 @@ const MARKETS = [
     qYes: 50,
     qNo: 10,
   },
+  {
+    slug: "vision-tactile-parity-2030",
+    title:
+      "By 2030, will vision-based tactile sensors match human-fingertip touch in a shipping robot?",
+    description:
+      "Camera-behind-gel sensors (GelSight-class) may hack mechanoreception non-humanoidly — sensing contact geometry optically instead of copying skin. Resolves YES if a shipping product demonstrates human-fingertip-class tactile acuity this way.",
+    category: "Sensing",
+    closesIn: 1300,
+    resolvesIn: 1330,
+    b: 150,
+    qYes: 40,
+    qNo: 25,
+  },
+  {
+    slug: "wiring-harness-nonhumanoid-2031",
+    title:
+      "By 2031, will non-humanoid arms route wiring harnesses on a production car line before humanoids do?",
+    description:
+      "Threading a wire loom through a chassis cavity is a classic 'needs a bendy limb' task. Resolves YES if continuum/snake-arm robots do it in volume production before any humanoid does.",
+    category: "Manipulation",
+    closesIn: 1700,
+    resolvesIn: 1720,
+    b: 150,
+    qYes: 35,
+    qNo: 20,
+  },
+  {
+    slug: "reconfigurable-line-2032",
+    title:
+      "By 2032, will a major automaker run a software-reconfigurable robot line, retooled in software rather than steel?",
+    description:
+      "A fleet of shape-shifting robots could let a factory reprogram its line for a new model in software — attacking the biggest cost in auto: retooling. Resolves YES on a confirmed production deployment.",
+    category: "Form",
+    closesIn: 2000,
+    resolvesIn: 2030,
+    b: 160,
+    qYes: 25,
+    qNo: 35,
+  },
 ];
 
 async function main() {
